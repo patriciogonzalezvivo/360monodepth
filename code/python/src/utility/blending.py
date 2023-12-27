@@ -3,7 +3,7 @@ import projection_icosahedron as proj_ico
 import gnomonic_projection as gp
 import spherical_coordinates as sc
 
-from EigenSolvers import LinearSolver
+# from EigenSolvers import LinearSolver
 from utility import metrics
 from utility import depthmap_utils
 import matplotlib
@@ -46,12 +46,12 @@ class BlendIt:
         self.A = None
         self.x_grad_mat = None
         self.y_grad_mat = None
-        if blending_method == "all" or blending_method == "poisson":
-            # Supported solvers: [SimplicialLLT, SimplicialLDLT, SparseLU, ConjugateGradient,
-            #                     LeastSquaresConjugateGradient, BiCGSTAB]
-            self.eigen_solver = LinearSolver(LinearSolver.solverType.BiCGSTAB)
-        else:
-            self.eigen_solver = None
+        self.eigen_solver = None
+
+        # if blending_method == "all" or blending_method == "poisson":
+        #     # Supported solvers: [SimplicialLLT, SimplicialLDLT, SparseLU, ConjugateGradient,
+        #     #                     LeastSquaresConjugateGradient, BiCGSTAB]
+        #     self.eigen_solver = LinearSolver(LinearSolver.solverType.BiCGSTAB)
 
     def blend(self, subimage_dispmap, erp_image_height):
         """Blending the 20 face disparity map to ERP disparity map.
@@ -101,9 +101,9 @@ class BlendIt:
         mean_blended = np.nanmean(equirect_depth_tensor, axis=2)
 
         blended_img = dict()
-        if self.blending_method == 'poisson':
-            blended_img[self.blending_method] = self.gradient_blending(equirect_depth_tensor, self.frustum_blendweights,
-                                                                       nn_blending)
+        # if self.blending_method == 'poisson':
+        #     blended_img[self.blending_method] = self.gradient_blending(equirect_depth_tensor, self.frustum_blendweights,
+        #                                                                nn_blending)
         if self.blending_method == 'frustum':
             blended_img[self.blending_method] = frustum_blended
 
@@ -117,8 +117,8 @@ class BlendIt:
             blended_img[self.blending_method] = mean_blended
 
         if self.blending_method == 'all':
-            blended_img['poisson'] = self.gradient_blending(equirect_depth_tensor, self.frustum_blendweights,
-                                                            nn_blending)
+            # blended_img['poisson'] = self.gradient_blending(equirect_depth_tensor, self.frustum_blendweights,
+            #                                                 nn_blending)
             blended_img['frustum'] = frustum_blended
             blended_img['radial'] = radial_blended
             blended_img['nn'] = nn_blending
@@ -260,9 +260,9 @@ class BlendIt:
                                                                [tangent_sq_yv, tangent_sq_xv],
                                                                order=1, mode='constant', cval=0.)
 
-            erp_radial_weights[erp_sq_yv.astype(np.int), erp_sq_xv.astype(np.int), triangle_index] = erp_face_radial_weights
+            erp_radial_weights[erp_sq_yv.astype(np.int32), erp_sq_xv.astype(np.int32), triangle_index] = erp_face_radial_weights
 
-            erp_frustum_weights[erp_sq_yv.astype(np.int), erp_sq_xv.astype(np.int),
+            erp_frustum_weights[erp_sq_yv.astype(np.int32), erp_sq_xv.astype(np.int32),
                                 triangle_index] = erp_face_frustum_weights
 
         self.frustum_blendweights = erp_frustum_weights
@@ -294,11 +294,11 @@ class BlendIt:
             erp_face_image = ndimage.map_coordinates(tangent_images[triangle_index], [tangent_sq_yv, tangent_sq_xv],
                                                      order=1, mode='constant', cval=0.)
 
-            nn_blending[erp_tri_yv.astype(np.int), erp_tri_xv.astype(np.int)] = \
+            nn_blending[erp_tri_yv.astype(np.int32), erp_tri_xv.astype(np.int32)] = \
                 ndimage.map_coordinates(tangent_images[triangle_index], [tangent_tri_yv, tangent_tri_xv],
                                         order=1, mode='constant', cval=0.)
 
-            erp_depth_tensor[erp_sq_yv.astype(np.int), erp_sq_xv.astype(np.int),
+            erp_depth_tensor[erp_sq_yv.astype(np.int32), erp_sq_xv.astype(np.int32),
                              triangle_index] = erp_face_image.astype(np.float64)
 
         return erp_depth_tensor, nn_blending
@@ -322,7 +322,7 @@ class BlendIt:
 
     def get_frustum_blendweights(self, size):
         height, width = size
-        weight_matrix = np.zeros((height, width), dtype=np.float)
+        weight_matrix = np.zeros((height, width), dtype=np.float64)
 
         x_list = np.linspace(0, width, width, endpoint=False)
         y_list = np.linspace(0, height, height, endpoint=False)
@@ -343,8 +343,8 @@ class BlendIt:
         peak_bottom_right = np.array([np.max(peak_coors[0]), np.max(peak_coors[1])])
 
         unit_dir = np.array([1/np.sqrt(2), 1/np.sqrt(2)])
-        top_left = (peak_top_left - 2*self.diagonal_percentage*unit_dir).astype(np.int)
-        bottom_right = (peak_bottom_right + 2*self.diagonal_percentage*unit_dir).astype(np.int)
+        top_left = (peak_top_left - 2*self.diagonal_percentage*unit_dir).astype(np.int32)
+        bottom_right = (peak_bottom_right + 2*self.diagonal_percentage*unit_dir).astype(np.int32)
         total_dist[top_left[0]:bottom_right[0]+1, top_left[1]:bottom_right[1]+1] = 0
         total_dist = (total_dist - np.min(total_dist)) / np.ptp(total_dist)
         total_dist[top_left[0]:bottom_right[0] + 1, top_left[1]:bottom_right[1] + 1] = 1
@@ -453,6 +453,7 @@ class BlendIt:
 
         if self.blending_method != "poisson" and self.blending_method != "all":
             return
+        
         # Horizontal forward finite differences
         x_grad_mat = scipy.sparse.coo_matrix((cols, cols))
         x_grad_mat.setdiag(-1)

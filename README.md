@@ -74,7 +74,7 @@ And download the required weights as indicated in their [README](https://github.
 Always execute this command per new instance of shell. 
 
 ```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/conda/envs/360monodepth/lib/python3.8/site-packages/instaOmniDepth
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/conda/envs/360monodepth/lib/python3.8/site-packages/
 ```
 
 Now, we can run the code!
