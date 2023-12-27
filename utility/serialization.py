@@ -1,13 +1,13 @@
 
 from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
 
-import metrics
 import json
 import os
 import pickle
 from logger import Logger
+
+import cv2
 
 log = Logger(__name__)
 log.logger.propagate = False
@@ -323,24 +323,52 @@ def load_dispmapalign_intermediate_data(filepath, file_format):
         raise RuntimeError(f"File format '{file_format}' is not supported")
 
 
-def save_metrics(output_file, pred_metrics, times, times_header, idx, blending_methods):
-    if idx == 0:
-        with open(output_file, "w") as f:
-            f.write(','.join(list(pred_metrics[0].keys()) + times_header))
-            f.write("\n")
-        f.close()
+def hue_to_rgb(hue):
+    if isinstance(hue, np.ndarray):
+        hue = 1.0 - hue
+        rgb = np.zeros((hue.shape[0], hue.shape[1], 3))
+        rgb[..., 0] = hue * 6.0
+        rgb[..., 1] = hue * 6.0 + 4.0
+        rgb[..., 2] = hue * 6.0 + 2.0
+ 
+    else:
+        hue = 1.0 - hue
+        rgb = np.zeros(3)
+        rgb[0] = hue * 6.0
+        rgb[1] = hue * 6.0 + 4.0
+        rgb[2] = hue * 6.0 + 2.0
 
-    with open(output_file, "a") as f:
-        for idx, key in enumerate(blending_methods):
-            f.write(','.join(list(np.array(list(pred_metrics[idx].values())).astype(str)) + [str(t) for t in times]))
-            f.write("\n")
-    f.close()
+    rgb = np.abs(np.mod(rgb, 6.0) - 3.0) - 1.0
+    rgb = np.clip(rgb, 0.0, 1.0)
+    return rgb
+
+
+def heat_to_rgb(heat):
+    return hue_to_rgb( 1.0 - heat * 0.65 )
+
+def depth_to_rgb(depth):
+    rgb = np.zeros((depth.shape[0], depth.shape[1], 3))
+    rgb[..., 0] = depth
+    rgb[..., 1] = depth
+    rgb[..., 2] = depth
+    return rgb
+
 
 
 def save_predictions(output_file, erp_rgb_image_data, estimated_depthmap, persp_monodepth):
     for key in estimated_depthmap.keys():
-        pred = estimated_depthmap[key]
-        plt.imsave("{}_{}_{}.png".format(output_file, persp_monodepth, key), pred, cmap="turbo")
+        path = "{}_{}_{}.png".format(output_file, persp_monodepth, key)
+        depth = estimated_depthmap[key]
+        depth = depth.astype(np.float64)
+        depth_max = depth.max()
+        depth_min = depth.min()
+        print("depth min: ", depth_min)
+        print("depth max: ", depth_max)
+        depth = (depth - depth_min) / (depth_max - depth_min)
+        depth = 1.0-depth
+
+        # plt.imsave(path, depth, cmap="turbo")
+        cv2.imwrite(path, (heat_to_rgb(depth) * 255 ).astype(np.uint8))
         
     # plt.imsave("{}_rgb.png".format(output_file), erp_rgb_image_data)
 

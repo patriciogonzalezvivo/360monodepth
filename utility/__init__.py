@@ -13,7 +13,6 @@ sys.path.append(os.path.abspath(os.path.join(python_src_dir, os.pardir, os.pardi
 # Data directory /data/
 # TODO: remove the trailing slash once all usages of TEST_DATA_DIR are updated
 TEST_DATA_DIR = os.path.abspath("data/") + "/"
-MAIN_DATA_DIR = os.path.abspath("data/") + "/"
 
 # Set the PyTorch hub folder as an environment variable
 # TODO: use os.path.join instead of string

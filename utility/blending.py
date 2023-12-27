@@ -3,19 +3,17 @@ import projection_icosahedron as proj_ico
 import gnomonic_projection as gp
 import spherical_coordinates as sc
 
-# from EigenSolvers import LinearSolver
-from utility import metrics
 from utility import depthmap_utils
-import matplotlib
+# from EigenSolvers import LinearSolver
+# import matplotlib
 # matplotlib.use('TkAgg')
 
 
 from scipy import ndimage
 import scipy.sparse
-from scipy.sparse.linalg import spsolve
 import scipy.sparse.linalg
-import scipy.sparse
-import matplotlib.pyplot as plt
+# from scipy.sparse.linalg import spsolve
+# import matplotlib.pyplot as plt
 
 import json
 

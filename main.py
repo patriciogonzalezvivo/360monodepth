@@ -2,7 +2,6 @@ from utility import fs_utility
 from utility.fs_utility import FileNameConvention
 
 import os
-import time
 import re
 from pathlib import Path
 import numpy as np
@@ -11,11 +10,10 @@ import shutil
 import argparse
 
 from utility import depthmap_align, image_io
-from utility import depthmap_utils, metrics
+from utility import depthmap_utils
 from utility import blending
 from utility import serialization
 from utility import projection_icosahedron as proj_ico
-from utility import MAIN_DATA_DIR
 
 from utility.logger import Logger
 
@@ -30,7 +28,6 @@ def grid_size_type(arg_value, pat=re.compile(r"^[2-9]+[xX][2-9]+$")):
 
 
 class Options():
-
     def __init__(self) -> None:
         self.parser = None
         self.input_image_path = None
@@ -138,7 +135,7 @@ class Options():
         print(message)
 
 
-def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
+def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt):
     """ Estimate the ERP image depth map from ERP rgb image.
 
     :param erp_rgb_image_data: RGB image data, [height, width, 3]
@@ -148,8 +145,6 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
     :return: the estimated depth map, [height, width]
     :rtype: numpy
     """
-    times = []  # Per stage
-    total_time = 0.0
 
     erp_image_height = erp_rgb_image_data.shape[0]
     subimage_dispmap_erp_list = []
@@ -162,7 +157,6 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
     # 1) load ERP image & project to 20 face images
     if 1 in opt.available_steps:
         log.info("1) load ERP image & project to 20 face images")
-        tic = time.perf_counter()
         # project to 20 images
         subimage_rgb_list, _, points_gnomocoord = proj_ico.erp2ico_image(erp_rgb_image_data,
                                                                          opt.subimage_tangent_image_width,
@@ -182,11 +176,6 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
             subimage_rgb_array_filepath = fnc.subimage_rgb_filename_expression.format(999)
             image_io.subimage_save_ico(subimage_rgb_list, subimage_rgb_array_filepath)
 
-        toc = time.perf_counter()
-        log.info(f"Load and split image in {toc - tic:0.4f} seconds.")
-        total_time += toc - tic
-        times.append(toc-tic)
-
     # 2) MiDaS estimate disparity maps
     if 2 in opt.available_steps:
         log.info("2) MiDaS estimate disparity maps")
@@ -201,7 +190,6 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
                                                              opt.subimage_padding_size, full_face_image=True)
             tangent_image_gnomo_xy = points_gnomocoord[1]
 
-        tic = time.perf_counter()
         subimage_depthmap_persp_list = []
         # estimate disparity map
         subimage_dispmap_persp_list = depthmap_utils.run_persp_monodepth(subimage_rgb_list, opt.persp_monodepth)
@@ -235,10 +223,6 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
                 depthmap_utils.depth_visual_save(subimage_dispmap_erp_list[index], depth_filename + ".jpg")
                 if index % 4 == 0:
                     print("Output subimages disparity map to {}".format(depth_filename))
-        toc = time.perf_counter()
-        log.info(f"MiDaS estimate disparity maps in {toc - tic:0.4f} seconds.")
-        total_time += toc - tic
-        times.append(toc-tic)
 
     # 3) align disparity maps
     if 3 in opt.available_steps:
@@ -252,7 +236,6 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
                 depth_filename = fnc.subimage_dispmap_erp_filename_expression.format(index)
                 subimage_dispmap_erp_list.append(depthmap_utils.read_pfm(depth_filename)[0])
 
-        tic = time.perf_counter()
         # subimages dispmap align parameters
         # set alignment parameter
         depthmap_aligner = depthmap_align.DepthmapAlign()
@@ -327,11 +310,6 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
                 if index % 4 == 0:
                     print("Output aligned subimages disparity map to {}".format(depth_filename))
 
-        toc = time.perf_counter()
-        log.info(f"Align disparity maps in {toc - tic:0.4f} seconds.")
-        total_time += toc - tic
-        times.append(toc-tic)
-
     # 4) blender to ERP image & output ERP disparity map and visualized image
     if 4 in opt.available_steps:
         if not dispmap_aligned_list or not subimage_cam_param_list:
@@ -345,14 +323,13 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
             log.info("load subimage's camera parameters from disk.")
 
         log.info("4) blender to ERP image")
-        tic = time.perf_counter()
 
         erp_dispmap_blend = None
         if len(opt.subimage_available_list) == 20:
-            if idx == 0:
-                blendIt.tangent_images_coordinates(erp_image_height, dispmap_aligned_list[0].shape)
-                blendIt.erp_blendweights(subimage_cam_param_list, erp_image_height, dispmap_aligned_list[0].shape)
-                blendIt.compute_linear_system_matrices(erp_image_height, erp_image_height * 2, blendIt.frustum_blendweights)
+            # if idx == 0:
+            blendIt.tangent_images_coordinates(erp_image_height, dispmap_aligned_list[0].shape)
+            blendIt.erp_blendweights(subimage_cam_param_list, erp_image_height, dispmap_aligned_list[0].shape)
+            blendIt.compute_linear_system_matrices(erp_image_height, erp_image_height * 2, blendIt.frustum_blendweights)
 
             erp_dispmap_blend = blendIt.blend(dispmap_aligned_list, erp_image_height)
         else:
@@ -362,14 +339,10 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
             # file with blank depth
             dispmap_aligned_list_filled = depthmap_utils.fill_ico_subimage(dispmap_aligned_list,
                                                                            opt.subimage_available_list)
-            erp_dispmap_blend = proj_ico.ico2erp_image(dispmap_aligned_list_filled, erp_image_height,
-                                                       opt.subimage_padding_size, blender_method="mean")
+            erp_dispmap_blend = proj_ico.ico2erp_image(dispmap_aligned_list_filled, erp_image_height, opt.subimage_padding_size, blender_method="mean")
 
         if opt.debug_enable:
-            if opt.blending_method == 'all':
-                erp_dispmap_blend_save = erp_dispmap_blend['poisson']
-            else:
-                erp_dispmap_blend_save = erp_dispmap_blend[opt.blending_method]
+            erp_dispmap_blend_save = erp_dispmap_blend[opt.blending_method]
 
             # output blending result disparity map
             erp_aligned_dispmap_filepath = fnc.erp_depthmap_blending_result_filename_expression
@@ -377,31 +350,7 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt, idx=1):
             erp_aligned_dispmap_vis_filepath = fnc.erp_depthmap_vis_blending_result_filename_expression
             depthmap_utils.depth_visual_save(erp_dispmap_blend_save, erp_aligned_dispmap_vis_filepath + ".jpg")
 
-        toc = time.perf_counter()
-        log.info(f"Blender to ERP image in {toc - tic:0.4f} seconds.")
-        total_time += toc - tic
-        times.append(toc-tic)
-
-        times.append(total_time)
-        return erp_dispmap_blend, times
-
-
-def error_metric(depthmap_estimated, erp_gt_depthmap):
-    """ Metric the error of the depthmap.
-
-    :param depthmap_estimated: The estimated depth map.
-    :type depthmap_estimated: numpy
-    :param erp_gt_depthmap: The depth map ground truth.
-    :type erp_gt_depthmap: numpy
-    """
-    # report the error
-    log.info("output ERP disparity map and visualized image")
-
-    pred_metrics = []
-    for key in depthmap_estimated.keys():
-        pred_metrics.append(metrics.report_error(erp_gt_depthmap, depthmap_estimated[key]))
-
-    return pred_metrics
+        return erp_dispmap_blend
 
 
 def monodepth_360(opt):
@@ -435,8 +384,6 @@ def monodepth_360(opt):
         times_header = [times_header[i-1] for i in opt.available_steps]
         times_header.append("t_total(s)")
 
-        metrics_list = []
-
         if "matterport" in input_image_path:
             opt.dataset_matterport_hexagon_mask_enable = True
             opt.dataset_matterport_blur_area_height = 140  # * 0.75
@@ -445,11 +392,9 @@ def monodepth_360(opt):
 
 
         data_root = os.path.dirname(input_image_path)
-        erp_pred_filename = os.path.join(data_root, "dispmap_aligned.pfm")
         debug_output_dir = os.path.join(data_root, "debug/")
         Path(debug_output_dir).mkdir(parents=True, exist_ok=True)
 
-        erp_aligned_dispmap_filepath = erp_pred_filename
         erp_image_filepath = input_image_path
         filename_base, _ = os.path.splitext(os.path.basename(input_image_path))
 
@@ -460,7 +405,7 @@ def monodepth_360(opt):
         # load ERP rgb image and estimate the ERP depth map
         erp_rgb_image_data = image_io.image_read(erp_image_filepath)
         # Load matrices for blending linear system
-        estimated_depthmap, times = depthmap_estimation(erp_rgb_image_data, fnc, opt, blend_it, 0)
+        estimated_depthmap = depthmap_estimation(erp_rgb_image_data, fnc, opt, blend_it)
 
         serialization.save_predictions(output_image_path, erp_rgb_image_data, estimated_depthmap, opt.persp_monodepth)
 

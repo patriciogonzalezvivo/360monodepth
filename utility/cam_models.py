@@ -8,12 +8,10 @@ from scipy.spatial.transform import Rotation as R
 
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 matplotlib.use('TkAgg')
 
 import sys
 import os
-import json
 
 
 from logger import Logger
