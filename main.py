@@ -85,7 +85,7 @@ class Options():
         parser.add_argument("--input", "-i", type=str, help="experiment name", required=True)
         parser.add_argument("--output", "-o", type=str, default="None", help="experiment name")
 
-        parser.add_argument("--blending_method", type=str, default="frustum", choices=['frustum', 'radial', 'nn', 'mean', 'all'])
+        parser.add_argument("--blending_method", type=str, default="frustum", choices=['poisson', 'frustum', 'radial', 'nn', 'mean', 'all'])
         
         parser.add_argument("--grid_size", type=grid_size_type, default="8x7", help="width x height")
         parser.add_argument("--padding", type=float, default="0.3")

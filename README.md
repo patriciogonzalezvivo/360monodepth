@@ -28,7 +28,7 @@ cd 360monodepth
 On linux:
 
 ```
-sudo apt install libceres-dev libeigen3-dev libgoogle-glog-dev libgflags-dev libgtest-dev libopencv-dev libboost-all-dev pybind11-dev
+sudo apt install libceres-dev libeigen3-dev libgoogle-glog-dev libgflags-dev libgtest-dev libopencv-dev libboost-all-dev python3-pybind11 pybind11-dev
 ```
 
 3. We need to create a conda environment with python 3.8 and build the C++ targets
