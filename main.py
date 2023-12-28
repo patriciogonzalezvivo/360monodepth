@@ -15,6 +15,9 @@ from utility import blending
 from utility import serialization
 from utility import projection_icosahedron as proj_ico
 
+import warnings
+warnings.filterwarnings("ignore")
+
 from utility.logger import Logger
 
 log = Logger(__name__)
@@ -82,13 +85,12 @@ class Options():
         parser.add_argument("--input", "-i", type=str, help="experiment name", required=True)
         parser.add_argument("--output", "-o", type=str, default="None", help="experiment name")
 
-        parser.add_argument("--blending_method", type=str, default="frustum",
-                            choices=['frustum', 'radial', 'nn', 'mean', 'all'])
+        parser.add_argument("--blending_method", type=str, default="frustum", choices=['frustum', 'radial', 'nn', 'mean', 'all'])
         
         parser.add_argument("--grid_size", type=grid_size_type, default="8x7", help="width x height")
         parser.add_argument("--padding", type=float, default="0.3")
         parser.add_argument("--multires_levels", type=int, default=1, help="Levels of multi-resolution pyramid. If > 1 then --grid_size is the lowest resolution")
-        parser.add_argument("--persp_monodepth", type=str, default="midas2", choices=["midas2", "midas3", "boost"])
+        parser.add_argument("--persp_monodepth", type=str, default="midas2", choices=["midas2", "midas3", "zoedepth"])
         parser.add_argument('--depthalignstep', type=int, nargs='+', default=[1, 2, 3, 4])
         parser.add_argument("--rm_debug_folder", default=True, action='store_false')
         parser.add_argument("--intermediate_data", default=False, action='store_true', help="save intermediate data generated during the pipeline")

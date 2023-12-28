@@ -34,9 +34,8 @@ sudo apt install libceres-dev libeigen3-dev libgoogle-glog-dev libgflags-dev lib
 3. We need to create a conda environment with python 3.8 and build the C++ targets
 
 ```
-conda create -n 360monodepth python=3.8
+conda create -f environment.yml
 conda activate 360monodepth
-pip install -r requirements.txt
 ```
 
 4. Build ```pybind11``` in ```cpp/3rd_party``` first (or ```apt-get install python3-pybind11```). Then, modify ```cmakeconfig``` and ```cpp/python/setup.py``` to add own paths to libraries/includes
@@ -54,7 +53,7 @@ make -j8
 cd cpp/python
 python setup.py build
 python setup.py bdist_wheel
-pip install cpp/python/dist/F-0.1.0-cp38-cp38-linux_x86_64.whl
+pip install dist/instaOmniDepth-0.1.0-cp39-cp39-linux_x86_64.whl 
 ```
 
 ## Running code

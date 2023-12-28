@@ -62,5 +62,5 @@ if(LINUX)
     MESSAGE("Configure for Linux platform.")
     #set(Python3_ROOT_DIR "/mnt/d/workenv_wsl/python3_8_com/bin/Python3")
     # Numpy
-    set(Python3_NumPy_INCLUDE_DIR "/usr/local/lib/python3.8/dist-packages/numpy/core/include/")
+    #set(Python3_NumPy_INCLUDE_DIR "/home/patricio/miniconda3/envs/360depth/lib/python3.9/site-packages/numpy/core/include")
 endif()

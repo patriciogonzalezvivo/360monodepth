@@ -365,7 +365,9 @@ def save_predictions(output_file, erp_rgb_image_data, estimated_depthmap, persp_
         print("depth min: ", depth_min)
         print("depth max: ", depth_max)
         depth = (depth - depth_min) / (depth_max - depth_min)
-        depth = 1.0-depth
+
+        if persp_monodepth.startswith("midas2"): 
+            depth = 1.0-depth
 
         # plt.imsave(path, depth, cmap="turbo")
         cv2.imwrite(path, (heat_to_rgb(depth) * 255 ).astype(np.uint8))

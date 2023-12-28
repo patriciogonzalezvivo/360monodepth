@@ -105,12 +105,14 @@ target_link_libraries(${MODULE_NAME}
 )
 
 #========= Python module (Just for Coding) =======#
-find_package (Python3  REQUIRED COMPONENTS Interpreter Development NumPy)
+find_package (Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
+set(Python3_NumPy_INCLUDE_DIR "${Python3_SITELIB}/numpy/core/include")
 
 message("Python3_FOUND:${Python3_FOUND}")
 message("Python3_VERSION:${Python3_VERSION}")
 message("Python3_Development_FOUND:${Python3_Development_FOUND}")
 message("Python3_LIBRARIES:${Python3_LIBRARIES}")
+message("Python3_SITELIB:${Python3_SITELIB}")
 message("Python3_NumPy_FOUND:${Python3_NumPy_FOUND}")
 message("Python3_NumPy_INCLUDE_DIRS:${Python3_NumPy_INCLUDE_DIR}")
 message("Python3_NumPy_VERSION:${Python3_NumPy_VERSION}")
