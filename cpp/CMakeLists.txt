@@ -198,5 +198,5 @@ target_link_libraries(${MODULE_NAME}
 #=========  Eigen Solvers python binding =========#
 pybind11_add_module(EigenSolvers ${PROJECT_SOURCE_DIR}/src/EigenSolvers.cpp )
 target_include_directories(EigenSolvers PRIVATE ${EIGEN3_INCLUDE_DIRS})
-target_link_libraries(EigenSolvers PRIVATE ${GLOG_LIBRARIES})
-#target_link_libraries(EigenSolvers PRIVATE glog::glog)
+# target_link_libraries(EigenSolvers PRIVATE ${GLOG_LIBRARIES})
+target_link_libraries(EigenSolvers PRIVATE glog::glog)

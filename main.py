@@ -344,7 +344,10 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt):
             erp_dispmap_blend = proj_ico.ico2erp_image(dispmap_aligned_list_filled, erp_image_height, opt.subimage_padding_size, blender_method="mean")
 
         if opt.debug_enable:
-            erp_dispmap_blend_save = erp_dispmap_blend[opt.blending_method]
+            if opt.blending_method == 'all':
+                erp_dispmap_blend_save = erp_dispmap_blend['poisson']
+            else:
+                erp_dispmap_blend_save = erp_dispmap_blend[opt.blending_method]
 
             # output blending result disparity map
             erp_aligned_dispmap_filepath = fnc.erp_depthmap_blending_result_filename_expression

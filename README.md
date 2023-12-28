@@ -38,7 +38,7 @@ conda create -f environment.yml
 conda activate 360monodepth
 ```
 
-4. Build ```pybind11``` in ```cpp/3rd_party``` first (or ```apt-get install python3-pybind11```). Then, modify ```cmakeconfig``` and ```cpp/python/setup.py``` to add own paths to libraries/includes
+4. Build Python bindings
 
 ```
 cd cpp

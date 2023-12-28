@@ -1,5 +1,8 @@
 *.so
 *.egg-info
 __pycache__
+bin/
+lib/
+dist/
 build/
 results/

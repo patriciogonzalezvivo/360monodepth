@@ -4,7 +4,7 @@ import gnomonic_projection as gp
 import spherical_coordinates as sc
 
 from utility import depthmap_utils
-# from EigenSolvers import LinearSolver
+from instaOmniDepth import EigenSolvers 
 
 # import matplotlib
 # matplotlib.use('TkAgg')
@@ -47,10 +47,10 @@ class BlendIt:
         self.y_grad_mat = None
         self.eigen_solver = None
 
-        # if blending_method == "all" or blending_method == "poisson":
-        #     # Supported solvers: [SimplicialLLT, SimplicialLDLT, SparseLU, ConjugateGradient,
-        #     #                     LeastSquaresConjugateGradient, BiCGSTAB]
-        #     self.eigen_solver = LinearSolver(LinearSolver.solverType.BiCGSTAB)
+        if blending_method == "all" or blending_method == "poisson":
+            # Supported solvers: [SimplicialLLT, SimplicialLDLT, SparseLU, ConjugateGradient,
+            #                     LeastSquaresConjugateGradient, BiCGSTAB]
+            self.eigen_solver = EigenSolvers.LinearSolver(EigenSolvers.LinearSolver.solverType.BiCGSTAB)
 
     def blend(self, subimage_dispmap, erp_image_height):
         """Blending the 20 face disparity map to ERP disparity map.
@@ -100,9 +100,8 @@ class BlendIt:
         mean_blended = np.nanmean(equirect_depth_tensor, axis=2)
 
         blended_img = dict()
-        # if self.blending_method == 'poisson':
-        #     blended_img[self.blending_method] = self.gradient_blending(equirect_depth_tensor, self.frustum_blendweights,
-        #                                                                nn_blending)
+        if self.blending_method == 'poisson':
+            blended_img[self.blending_method] = self.gradient_blending(equirect_depth_tensor, self.frustum_blendweights, nn_blending)
         if self.blending_method == 'frustum':
             blended_img[self.blending_method] = frustum_blended
 
@@ -116,8 +115,7 @@ class BlendIt:
             blended_img[self.blending_method] = mean_blended
 
         if self.blending_method == 'all':
-            # blended_img['poisson'] = self.gradient_blending(equirect_depth_tensor, self.frustum_blendweights,
-            #                                                 nn_blending)
+            blended_img['poisson'] = self.gradient_blending(equirect_depth_tensor, self.frustum_blendweights, nn_blending)
             blended_img['frustum'] = frustum_blended
             blended_img['radial'] = radial_blended
             blended_img['nn'] = nn_blending
