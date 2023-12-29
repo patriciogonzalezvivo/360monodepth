@@ -313,6 +313,12 @@ def zoedepth_monodepth(rgb_image_data_list):
         with torch.no_grad():
             img_in = Image.fromarray(img.astype("uint8")).convert("RGB")
             prediction = model.infer_pil(img_in)
+
+            prediction_max = prediction.max()
+            prediction_min = prediction.min()
+            prediction = (prediction - prediction_min) / (prediction_max - prediction_min)
+            prediction = 1.0 - prediction
+            prediction = prediction * 1000.0
             print("min: {}, max: {}".format(np.min(prediction), np.max(prediction)))
 
         disparity_map_list.append(prediction)
