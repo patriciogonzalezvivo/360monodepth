@@ -59,7 +59,20 @@ pip install dist/instaOmniDepth-0.1.0-cp39-cp39-linux_x86_64.whl
 ## Running code
 
 ```
-python main.py -i data/0001.jpg -o data/0001 --grid_size 8x7 --persp_monodepth=midas3
+# create equirect PNG and npy file usign midas2
+python main.py -i data/0001.jpg --persp_monodepth=midas2 --npy
+# Create a 3D point cloud from the npy file
+python plot.py -r data/0001.jpg -d data/0001_midas2_frustum.npy
+
+# create equirect PNG and npy file usign midas3
+python main.py -i data/0001.jpg --persp_monodepth=midas3 --npy
+# Create a 3D point cloud from the npy file
+python plot.py -r data/0001.jpg -d data/0001_midas3_frustum.npy
+
+# create equirect PNG and npy file usign zoe
+python main.py -i data/0001.jpg --persp_monodepth=zoedepth --npy
+# Create a 3D point cloud from the npy file
+python plot.py -r data/0001.jpg -d data/0001_zoedepth_frustum.npy
 ```
 
 ## Citation

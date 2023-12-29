@@ -223,6 +223,7 @@ def MiDaS_torch_hub_data(rgb_image_data_list, persp_monodepth, use_large_model=T
             ).squeeze()
 
         output = prediction.cpu().numpy()
+        print("min: {}, max: {}".format(np.min(output), np.max(output)))
         disparity_map_list.append(output)
         del output
         del input_batch
@@ -290,6 +291,7 @@ def MiDaS_torch_hub_file(rgb_image_path, use_large_model=True):
         ).squeeze()
 
     output = prediction.cpu().numpy()
+    print("min: {}, max: {}".format(np.min(output), np.max(output)))
     # plt.imshow(output)
     # plt.show()
     return output
@@ -309,11 +311,9 @@ def zoedepth_monodepth(rgb_image_data_list):
     for index in range(0, len(rgb_image_data_list)):
         img = rgb_image_data_list[index]
         with torch.no_grad():
-            # x = torch.from_numpy(img).to(dtype=torch.float32, device=DEVICE)
-            # img_npy = np.array(img)
             img_in = Image.fromarray(img.astype("uint8")).convert("RGB")
-            # img_in = img.astype(np.float32)
             prediction = model.infer_pil(img_in)
+            print("min: {}, max: {}".format(np.min(prediction), np.max(prediction)))
 
         disparity_map_list.append(prediction)
         del prediction
