@@ -56,10 +56,8 @@ void main(void) {
 
     vec2 uv = v_texcoord;
     float dist = rgb2heat( texture2D(u_tex1, uv).rgb );
-    dist = texture2D(u_tex1, uv).r;
-    // dist += 0.5;
     vec3 dir = normalize(v_position.xyz);
-    v_position.xyz = dir * (0.1 + dist * dist);
+    v_position.xyz = dir * (0.1 + dist);
     
 #ifdef MODEL_VERTEX_TANGENT
     v_tangent = a_tangent;

@@ -35,6 +35,7 @@ class Options():
         self.parser = None
         self.input_image_path = None
         self.output_image_path = None
+        self.save_npy = False
 
         # 0) input data option
         self.available_steps = [3, 4, 5]
@@ -94,11 +95,13 @@ class Options():
         parser.add_argument('--depthalignstep', type=int, nargs='+', default=[1, 2, 3, 4])
         parser.add_argument("--rm_debug_folder", default=True, action='store_false')
         parser.add_argument("--intermediate_data", default=False, action='store_true', help="save intermediate data generated during the pipeline")
+        parser.add_argument("--npy", default=False, action='store_true', help="save npy file")
         opt_arguments = parser.parse_args()
 
         # 2) update options
         self.blending_method = opt_arguments.blending_method
         self.input_image_path = opt_arguments.input
+        self.save_npy = opt_arguments.npy
 
         if opt_arguments.output == "None":
             folder = os.path.dirname(opt_arguments.input)
@@ -332,7 +335,6 @@ def depthmap_estimation(erp_rgb_image_data, fnc, opt, blendIt):
             blendIt.tangent_images_coordinates(erp_image_height, dispmap_aligned_list[0].shape)
             blendIt.erp_blendweights(subimage_cam_param_list, erp_image_height, dispmap_aligned_list[0].shape)
             blendIt.compute_linear_system_matrices(erp_image_height, erp_image_height * 2, blendIt.frustum_blendweights)
-
             erp_dispmap_blend = blendIt.blend(dispmap_aligned_list, erp_image_height)
         else:
             # available faces number is not 20, output subimages linear blend result
@@ -412,7 +414,7 @@ def monodepth_360(opt):
         # Load matrices for blending linear system
         estimated_depthmap = depthmap_estimation(erp_rgb_image_data, fnc, opt, blend_it)
 
-        serialization.save_predictions(output_image_path, erp_rgb_image_data, estimated_depthmap, opt.persp_monodepth)
+        serialization.save_predictions(output_image_path, erp_rgb_image_data, estimated_depthmap, opt.persp_monodepth, opt.save_npy)
 
         # Remove temporal storage folder
         if opt.rm_debug_folder and os.path.isdir(debug_output_dir):

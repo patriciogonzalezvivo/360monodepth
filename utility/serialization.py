@@ -355,7 +355,7 @@ def depth_to_rgb(depth):
 
 
 
-def save_predictions(output_file, erp_rgb_image_data, estimated_depthmap, persp_monodepth):
+def save_predictions(output_file, erp_rgb_image_data, estimated_depthmap, persp_monodepth, save_npy=False):
     for key in estimated_depthmap.keys():
         path = "{}_{}_{}.png".format(output_file, persp_monodepth, key)
         depth = estimated_depthmap[key]
@@ -371,6 +371,10 @@ def save_predictions(output_file, erp_rgb_image_data, estimated_depthmap, persp_
 
         # plt.imsave(path, depth, cmap="turbo")
         cv2.imwrite(path, (heat_to_rgb(depth) * 255 ).astype(np.uint8))
+
+        if save_npy:
+            depth *= (depth_max - depth_min)
+            np.save(path.replace(".png", ".npy"), depth)
         
     # plt.imsave("{}_rgb.png".format(output_file), erp_rgb_image_data)
 
