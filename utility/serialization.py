@@ -346,13 +346,13 @@ def hue_to_rgb(hue):
 def heat_to_rgb(heat):
     return hue_to_rgb( 1.0 - heat * 0.65 )
 
+
 def depth_to_rgb(depth):
     rgb = np.zeros((depth.shape[0], depth.shape[1], 3))
     rgb[..., 0] = depth
     rgb[..., 1] = depth
     rgb[..., 2] = depth
     return rgb
-
 
 
 def save_predictions(output_file, erp_rgb_image_data, estimated_depthmap, persp_monodepth, save_npy=False):

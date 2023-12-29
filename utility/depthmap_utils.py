@@ -223,7 +223,7 @@ def MiDaS_torch_hub_data(rgb_image_data_list, persp_monodepth, use_large_model=T
             ).squeeze()
 
         output = prediction.cpu().numpy()
-        print("min: {}, max: {}".format(np.min(output), np.max(output)))
+        # print("min: {}, max: {}".format(np.min(output), np.max(output)))
         disparity_map_list.append(output)
         del output
         del input_batch
@@ -291,7 +291,7 @@ def MiDaS_torch_hub_file(rgb_image_path, use_large_model=True):
         ).squeeze()
 
     output = prediction.cpu().numpy()
-    print("min: {}, max: {}".format(np.min(output), np.max(output)))
+    # print("min: {}, max: {}".format(np.min(output), np.max(output)))
     # plt.imshow(output)
     # plt.show()
     return output
@@ -549,7 +549,7 @@ def dispmap_normalize(dispmap, method = "", mask = None):
     :rtype: numpy
     """
     if mask is None:
-        mask = np.ones_like(dispmap, dtype=np.bool_)
+        mask = np.ones_like(dispmap, dtype=np.bool)
 
     dispmap_norm = None
     if method == "naive":

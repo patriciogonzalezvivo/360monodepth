@@ -316,7 +316,7 @@ def write_ply(filename, field_list, field_names, triangular_faces=None):
         data.tofile(plyfile)
 
         if triangular_faces is not None:
-            triangular_faces = triangular_faces.astype(np.int32)
+            triangular_faces = triangular_faces.astype(np.int)
             type_list = [('k', 'uint8')] + [(str(ind), 'int32') for ind in range(3)]
             data = np.empty(triangular_faces.shape[0], dtype=type_list)
             data['k'] = np.full((triangular_faces.shape[0],), 3, dtype=np.uint8)

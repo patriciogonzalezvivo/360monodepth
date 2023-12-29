@@ -322,7 +322,7 @@ class BlendIt:
 
     def get_frustum_blendweights(self, size):
         height, width = size
-        weight_matrix = np.zeros((height, width), dtype=np.float)
+        # weight_matrix = np.zeros((height, width), dtype=np.float)
 
         x_list = np.linspace(0, width, width, endpoint=False)
         y_list = np.linspace(0, height, height, endpoint=False)
@@ -478,15 +478,7 @@ class BlendIt:
         mat_A = self.concatenate_csr_matrices_by_row(blocks)
         self.A = mat_A
         if self.eigen_solver is not None:
-            print("A_ = self.A")
-            A_ = self.A
-            print("self.A.transpose().dot(A_)")
-            B_ = A_.transpose()
-            print("self.dot")
-            C_ = B_.dot(self.A)
-            print("Assign it to self.eigen_solver.A")
-            self.eigen_solver.A = C_
+            self.eigen_solver.A = self.A.transpose().dot(self.A)
 
         # self.x_grad_mat = x_grad_mat
         # self.y_grad_mat = y_grad_mat
-        print("Done computing matrices")
